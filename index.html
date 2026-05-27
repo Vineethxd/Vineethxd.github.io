@@ -81,6 +81,22 @@
       transition: color 0.2s;
     }
     .nav-links a:hover { color: var(--text); }
+    .nav-resume {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,229,160,0.3);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      transition: all 0.2s;
+      font-family: var(--font);
+    }
+    .nav-resume:hover { background: rgba(0,229,160,0.18); transform: translateY(-1px); }
 
     /* ── Hero ── */
     .hero {
@@ -471,18 +487,20 @@
     <li><a href="#skills">Skills</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
+  <a href="Vineeth_Suryavanshi_Resume.docx" download class="nav-resume">↓ Resume</a>
 </nav>
 
 <!-- Hero -->
 <div class="hero">
   <div class="hero-glow"></div>
-  <div class="hero-badge">Available for opportunities</div>
+  <div class="hero-badge">Open to opportunities · Montreal, QC</div>
   <h1>Vineeth<br><span>Suryavanshi</span></h1>
   <p class="hero-sub">
-    AI & Automation Developer building systems that think, create, and ship — end to end.
+    IT Support Specialist with 3+ years in tech support, networking & data migration — and a side passion for building AI automation tools.
   </p>
   <div class="hero-actions">
-    <a href="#projects" class="btn btn-primary">View my work</a>
+    <a href="Vineeth_Suryavanshi_Resume.docx" download class="btn btn-primary">↓ Download Resume</a>
+    <a href="#projects" class="btn btn-ghost">View projects</a>
     <a href="https://linkedin.com/in/vineeth-suryavanshi-0b223a207" target="_blank" class="btn btn-ghost">LinkedIn ↗</a>
   </div>
 </div>
@@ -492,23 +510,23 @@
 <!-- About -->
 <section id="about">
   <div class="section-label">// about</div>
-  <div class="section-title">I build things that<br>run themselves.</div>
+  <div class="section-title">IT support by day.<br><span style="color:var(--accent)">AI builder</span> by night.</div>
   <p class="section-desc">
-    Based in Canada. I design and build end-to-end AI pipelines — from script generation and voice synthesis to automated video production and publishing. I care about systems that actually work, not just demos.
+    Based in Montreal, QC. I'm an IT Support Specialist with 3+ years of experience across Tier 1/2 technical support, network administration, CRM management, and large-scale data migration — with stints at Rogers Communications, Alorica, and Apollo Hospitals. I hold a Post Graduate Diploma in Computer Networking from TAV College. Outside of work, I build AI-powered automation systems because I genuinely love making computers do the hard part.
   </p>
 
   <div class="stats-row">
     <div class="stat-card">
+      <div class="stat-number">3+</div>
+      <div class="stat-label">Years IT Experience</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">3</div>
+      <div class="stat-label">Companies Supported</div>
+    </div>
+    <div class="stat-card">
       <div class="stat-number">7</div>
-      <div class="stat-label">Pipeline Steps Automated</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number">100%</div>
-      <div class="stat-label">End-to-End Automated</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number">0</div>
-      <div class="stat-label">Manual Editing Required</div>
+      <div class="stat-label">AI Pipeline Steps Built</div>
     </div>
     <div class="stat-card">
       <div class="stat-number">∞</div>
@@ -611,43 +629,49 @@
 <section id="skills">
   <div class="section-label">// skills</div>
   <div class="section-title">What I work with</div>
-  <p class="section-desc">Tools and technologies I use to build real things.</p>
+  <p class="section-desc">From IT support desks to AI pipelines — the full stack.</p>
 
   <div class="skills-grid">
     <div class="skill-group">
-      <div class="skill-group-title">Languages</div>
+      <div class="skill-group-title">IT Support</div>
       <div class="skill-list">
-        <div class="skill-item"><div class="skill-dot"></div>Python</div>
-        <div class="skill-item"><div class="skill-dot"></div>JavaScript</div>
-        <div class="skill-item"><div class="skill-dot"></div>HTML / CSS</div>
-        <div class="skill-item"><div class="skill-dot"></div>SQL</div>
+        <div class="skill-item"><div class="skill-dot"></div>Tier 1 & 2 Technical Support</div>
+        <div class="skill-item"><div class="skill-dot"></div>CRM & Ticketing Systems</div>
+        <div class="skill-item"><div class="skill-dot"></div>SLA Management</div>
+        <div class="skill-item"><div class="skill-dot"></div>Hardware Troubleshooting</div>
+        <div class="skill-item"><div class="skill-dot"></div>Remote Desktop Support</div>
+        <div class="skill-item"><div class="skill-dot"></div>Active Directory</div>
       </div>
     </div>
     <div class="skill-group">
-      <div class="skill-group-title">AI & ML</div>
+      <div class="skill-group-title">Networking</div>
+      <div class="skill-list">
+        <div class="skill-item"><div class="skill-dot"></div>Network Troubleshooting</div>
+        <div class="skill-item"><div class="skill-dot"></div>TCP/IP Fundamentals</div>
+        <div class="skill-item"><div class="skill-dot"></div>Workstation Configuration</div>
+        <div class="skill-item"><div class="skill-dot"></div>NOC Operations</div>
+        <div class="skill-item"><div class="skill-dot"></div>Data Migration & Validation</div>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="skill-group-title">AI & Automation</div>
       <div class="skill-list">
         <div class="skill-item"><div class="skill-dot"></div>LLM Integration</div>
         <div class="skill-item"><div class="skill-dot"></div>TTS Systems</div>
         <div class="skill-item"><div class="skill-dot"></div>Whisper / ASR</div>
         <div class="skill-item"><div class="skill-dot"></div>Prompt Engineering</div>
+        <div class="skill-item"><div class="skill-dot"></div>FFmpeg / Video Pipeline</div>
       </div>
     </div>
     <div class="skill-group">
-      <div class="skill-group-title">Backend</div>
+      <div class="skill-group-title">Dev & Tools</div>
       <div class="skill-list">
-        <div class="skill-item"><div class="skill-dot"></div>Flask</div>
-        <div class="skill-item"><div class="skill-dot"></div>Socket.IO</div>
-        <div class="skill-item"><div class="skill-dot"></div>REST APIs</div>
-        <div class="skill-item"><div class="skill-dot"></div>SQLite</div>
-      </div>
-    </div>
-    <div class="skill-group">
-      <div class="skill-group-title">Tools</div>
-      <div class="skill-list">
-        <div class="skill-item"><div class="skill-dot"></div>FFmpeg</div>
+        <div class="skill-item"><div class="skill-dot"></div>Python</div>
+        <div class="skill-item"><div class="skill-dot"></div>JavaScript</div>
+        <div class="skill-item"><div class="skill-dot"></div>SQL / MS Excel</div>
+        <div class="skill-item"><div class="skill-dot"></div>Flask & Socket.IO</div>
         <div class="skill-item"><div class="skill-dot"></div>Git / GitHub</div>
-        <div class="skill-item"><div class="skill-dot"></div>yt-dlp</div>
-        <div class="skill-item"><div class="skill-dot"></div>YouTube Data API</div>
+        <div class="skill-item"><div class="skill-dot"></div>MS Office Suite</div>
       </div>
     </div>
   </div>
@@ -660,17 +684,19 @@
   <div class="contact-box">
     <div class="section-label" style="justify-content:center;display:flex">// contact</div>
     <h2>Let's work together</h2>
-    <p>Open to new opportunities, collaborations, and interesting problems.<br>Reach out and let's talk.</p>
+    <p>Open to IT support roles, tech positions, and anything that needs fixing.<br>Reach out — I respond fast.</p>
     <div class="contact-links">
-      <a href="https://linkedin.com/in/vineeth-suryavanshi-0b223a207" target="_blank" class="btn btn-primary">LinkedIn ↗</a>
+      <a href="mailto:Vineethsur04@gmail.com" class="btn btn-primary">✉ Email me</a>
+      <a href="https://linkedin.com/in/vineeth-suryavanshi-0b223a207" target="_blank" class="btn btn-ghost">LinkedIn ↗</a>
       <a href="https://github.com/Vineethxd" target="_blank" class="btn btn-ghost">GitHub ↗</a>
+      <a href="Vineeth_Suryavanshi_Resume.docx" download class="btn btn-ghost">↓ Resume</a>
     </div>
   </div>
 </section>
 
 <!-- Footer -->
 <footer>
-  <span>© 2025 Vineeth Suryavanshi</span>
+  <span>© 2026 Vineeth Suryavanshi</span>
   <span>Built with 0 frameworks — just code.</span>
 </footer>
 
