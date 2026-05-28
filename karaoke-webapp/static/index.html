@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Karaoke Maker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .drop-active { border-color: #facc15 !important; background: rgba(250,204,21,0.05); }
+    .btn-primary { background:#facc15; color:#000; }
+    .btn-primary:hover { background:#fde047; }
+    .btn-disabled { background:#374151; color:#6b7280; cursor:not-allowed; }
+    .tab-active { background:#facc15; color:#000; font-weight:700; }
+    .tab-inactive { background:#1f2937; color:#9ca3af; }
+    .tab-inactive:hover { color:#facc15; }
+    @keyframes pulse-slow { 0%,100%{opacity:1} 50%{opacity:.5} }
+    .pulse-slow { animation: pulse-slow 1.5s ease-in-out infinite; }
+  </style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen flex flex-col items-center justify-center p-6">
+
+  <!-- ── UPLOAD SECTION ── -->
+  <div id="upload-section" class="w-full max-w-xl">
+    <h1 class="text-4xl font-black text-center mb-1 bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">
+      Karaoke Maker
+    </h1>
+    <p class="text-gray-400 text-center mb-6 text-sm">Upload a song or paste a YouTube link → instant karaoke video</p>
+
+    <!-- Mode tabs -->
+    <div class="flex rounded-xl overflow-hidden border border-gray-700 mb-5">
+      <button id="tab-file" onclick="setMode('file')"
+              class="flex-1 py-2.5 text-sm transition-all tab-active">
+        📁 Upload File
+      </button>
+      <button id="tab-youtube" onclick="setMode('youtube')"
+              class="flex-1 py-2.5 text-sm transition-all tab-inactive">
+        ▶ YouTube Link
+      </button>
+    </div>
+
+    <!-- File upload -->
+    <div id="file-panel">
+      <div id="drop-zone"
+           class="border-2 border-dashed border-gray-600 rounded-2xl p-10 text-center cursor-pointer transition-all"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="event.preventDefault(); this.classList.add('drop-active')"
+           ondragleave="this.classList.remove('drop-active')"
+           ondrop="handleDrop(event)">
+        <div class="text-5xl mb-3">🎵</div>
+        <p class="text-lg font-semibold mb-1">Drop your audio file here</p>
+        <p class="text-gray-400 text-sm mb-3">or click to browse</p>
+        <p class="text-gray-600 text-xs">MP3 · WAV · FLAC · M4A · AAC · OGG</p>
+        <input id="file-input" type="file" accept="audio/*" class="hidden" onchange="handleFileSelect(this)" />
+      </div>
+      <div id="file-info" class="hidden mt-3 px-4 py-2.5 bg-gray-800 rounded-xl flex items-center gap-3">
+        <span class="text-yellow-400 text-xl">🎵</span>
+        <span id="file-name" class="text-sm text-gray-200 truncate flex-1"></span>
+        <button onclick="clearFile()" class="text-gray-500 hover:text-red-400 text-xs shrink-0">✕ remove</button>
+      </div>
+    </div>
+
+    <!-- YouTube URL -->
+    <div id="youtube-panel" class="hidden">
+      <div class="relative">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-red-500 text-xl">▶</span>
+        <input id="yt-url"
+               type="url"
+               placeholder="https://www.youtube.com/watch?v=..."
+               oninput="onYtInput()"
+               class="w-full pl-12 pr-4 py-4 bg-gray-800 border border-gray-700 rounded-2xl text-sm text-gray-200
+                      focus:border-yellow-400 focus:outline-none placeholder-gray-600" />
+      </div>
+      <p class="text-xs text-gray-600 mt-2 ml-1">Supports youtube.com and youtu.be links</p>
+    </div>
+
+    <!-- Custom lyrics -->
+    <div class="mt-5">
+      <button onclick="toggleLyrics()"
+              class="text-sm text-gray-400 hover:text-yellow-400 transition-colors flex items-center gap-2">
+        <span id="chevron" class="text-xs">▶</span> Add custom lyrics (optional)
+      </button>
+      <div id="lyrics-section" class="hidden mt-3">
+        <p class="text-xs text-gray-500 mb-2">
+          One lyric line per row. If the line count matches Whisper's output exactly, these replace the auto-extracted text while keeping AI timestamps.
+        </p>
+        <textarea id="lyrics-input"
+          class="w-full h-44 bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-gray-200
+                 focus:border-yellow-400 focus:outline-none resize-none placeholder-gray-600"
+          placeholder="Verse 1 line 1&#10;Verse 1 line 2&#10;..."></textarea>
+      </div>
+    </div>
+
+    <button id="submit-btn" onclick="submitJob()"
+            class="mt-6 w-full py-4 rounded-xl font-bold text-lg transition-all btn-disabled"
+            disabled>
+      Generate Karaoke
+    </button>
+  </div>
+
+  <!-- ── PROGRESS SECTION ── -->
+  <div id="progress-section" class="hidden w-full max-w-xl">
+    <h2 class="text-2xl font-bold text-center mb-8">Processing your track...</h2>
+
+    <div class="space-y-5 mb-8">
+      <!-- Download step — only visible for YouTube mode -->
+      <div id="step-downloading" class="hidden flex items-center gap-4">
+        <div class="w-11 h-11 rounded-full bg-gray-800 flex items-center justify-center text-xl shrink-0">⬇</div>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Downloading from YouTube</p>
+          <p class="text-xs text-gray-500">yt-dlp fetching audio track</p>
+        </div>
+        <div class="step-badge text-xs text-gray-600 shrink-0">pending</div>
+      </div>
+
+      <div id="step-separating" class="flex items-center gap-4">
+        <div class="w-11 h-11 rounded-full bg-gray-800 flex items-center justify-center text-xl shrink-0">🎙</div>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Removing vocals</p>
+          <p class="text-xs text-gray-500">AI separating vocals from instruments (demucs)</p>
+        </div>
+        <div class="step-badge text-xs text-gray-600 shrink-0">pending</div>
+      </div>
+
+      <div id="step-transcribing" class="flex items-center gap-4">
+        <div class="w-11 h-11 rounded-full bg-gray-800 flex items-center justify-center text-xl shrink-0">📝</div>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Extracting lyrics</p>
+          <p class="text-xs text-gray-500">Whisper AI transcribing with timestamps</p>
+        </div>
+        <div class="step-badge text-xs text-gray-600 shrink-0">pending</div>
+      </div>
+
+      <div id="step-generating_video" class="flex items-center gap-4">
+        <div class="w-11 h-11 rounded-full bg-gray-800 flex items-center justify-center text-xl shrink-0">🎬</div>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Rendering karaoke video</p>
+          <p class="text-xs text-gray-500">Compositing synced lyrics onto video</p>
+        </div>
+        <div class="step-badge text-xs text-gray-600 shrink-0">pending</div>
+      </div>
+    </div>
+
+    <div class="w-full bg-gray-800 rounded-full h-1.5 mb-2">
+      <div id="progress-bar"
+           class="h-1.5 rounded-full bg-yellow-400 transition-all duration-700"
+           style="width:0%"></div>
+    </div>
+    <p id="progress-label" class="text-center text-gray-400 text-xs">Starting...</p>
+  </div>
+
+  <!-- ── RESULT SECTION ── -->
+  <div id="result-section" class="hidden w-full max-w-3xl">
+    <h2 class="text-2xl font-bold text-center mb-5 text-yellow-400">Your karaoke is ready! 🎤</h2>
+    <video id="video-player" controls
+           class="w-full rounded-2xl shadow-2xl mb-5 bg-black"
+           style="aspect-ratio:16/9"></video>
+    <div class="flex gap-3">
+      <a id="download-btn" href="#" download="karaoke.mp4"
+         class="flex-1 py-3 text-center rounded-xl font-semibold btn-primary transition-all">
+        ⬇ Download MP4
+      </a>
+      <button onclick="resetApp()"
+              class="flex-1 py-3 rounded-xl border border-gray-700 text-gray-300
+                     hover:border-yellow-400 hover:text-yellow-400 transition-colors text-sm font-medium">
+        ↩ Make Another
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let selectedFile = null;
+    let jobId = null;
+    let pollTimer = null;
+    let mode = 'file'; // 'file' | 'youtube'
+
+    // All possible step IDs in order
+    const ALL_STEPS = ["downloading", "separating", "transcribing", "generating_video"];
+
+    const STATUS_LABELS = {
+      queued:           "Queued — waiting to start...",
+      downloading:      "Downloading from YouTube...",
+      separating:       "Removing vocals with AI (1–3 min)...",
+      transcribing:     "Extracting lyrics via Whisper...",
+      generating_video: "Rendering karaoke video...",
+      done:             "Done!",
+    };
+
+    // ── Mode switching ──────────────────────────────────────────────
+    function setMode(m) {
+      mode = m;
+      document.getElementById('file-panel').classList.toggle('hidden', m !== 'file');
+      document.getElementById('youtube-panel').classList.toggle('hidden', m !== 'youtube');
+      document.getElementById('tab-file').className =
+        'flex-1 py-2.5 text-sm transition-all ' + (m === 'file' ? 'tab-active' : 'tab-inactive');
+      document.getElementById('tab-youtube').className =
+        'flex-1 py-2.5 text-sm transition-all ' + (m === 'youtube' ? 'tab-active' : 'tab-inactive');
+      recheckSubmit();
+    }
+
+    function recheckSubmit() {
+      const ready = mode === 'file' ? !!selectedFile : isValidYtUrl();
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = !ready;
+      if (ready) {
+        btn.classList.remove('btn-disabled'); btn.classList.add('btn-primary');
+      } else {
+        btn.classList.remove('btn-primary'); btn.classList.add('btn-disabled');
+      }
+    }
+
+    // ── File upload ─────────────────────────────────────────────────
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('drop-zone').classList.remove('drop-active');
+      if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+    }
+    function handleFileSelect(input) {
+      if (input.files[0]) setFile(input.files[0]);
+    }
+    function setFile(file) {
+      selectedFile = file;
+      document.getElementById('file-name').textContent = file.name;
+      document.getElementById('file-info').classList.remove('hidden');
+      recheckSubmit();
+    }
+    function clearFile() {
+      selectedFile = null;
+      document.getElementById('file-input').value = '';
+      document.getElementById('file-info').classList.add('hidden');
+      recheckSubmit();
+    }
+
+    // ── YouTube URL ─────────────────────────────────────────────────
+    function isValidYtUrl() {
+      const val = (document.getElementById('yt-url') || {}).value || '';
+      return /youtu\.?be/.test(val);
+    }
+    function onYtInput() { recheckSubmit(); }
+
+    // ── Lyrics toggle ───────────────────────────────────────────────
+    function toggleLyrics() {
+      const sec = document.getElementById('lyrics-section');
+      const hidden = sec.classList.toggle('hidden');
+      document.getElementById('chevron').textContent = hidden ? '▶' : '▼';
+    }
+
+    // ── Submit ──────────────────────────────────────────────────────
+    async function submitJob() {
+      const form = new FormData();
+
+      if (mode === 'file') {
+        if (!selectedFile) return;
+        form.append('audio', selectedFile);
+      } else {
+        const url = document.getElementById('yt-url').value.trim();
+        if (!isValidYtUrl()) return;
+        form.append('youtube_url', url);
+      }
+
+      const lyrics = document.getElementById('lyrics-input').value.trim();
+      if (lyrics) form.append('lyrics', lyrics);
+
+      // Show download step only for YouTube
+      document.getElementById('step-downloading').classList.toggle('hidden', mode !== 'youtube');
+
+      document.getElementById('upload-section').classList.add('hidden');
+      document.getElementById('progress-section').classList.remove('hidden');
+
+      const res = await fetch('/process', { method: 'POST', body: form });
+      const data = await res.json();
+
+      if (data.error) { showError(data.error); return; }
+      jobId = data.job_id;
+      pollTimer = setInterval(poll, 2500);
+    }
+
+    // ── Polling ─────────────────────────────────────────────────────
+    async function poll() {
+      const res = await fetch(`/status/${jobId}`);
+      const data = await res.json();
+      applyStatus(data);
+      if (data.status === 'done')  { clearInterval(pollTimer); showResult(); }
+      if (data.status === 'error') { clearInterval(pollTimer); showError(data.error); }
+    }
+
+    function applyStatus(data) {
+      document.getElementById('progress-bar').style.width = data.progress + '%';
+      document.getElementById('progress-label').textContent =
+        STATUS_LABELS[data.status] || data.status;
+
+      const currentIdx = ALL_STEPS.indexOf(data.status);
+
+      ALL_STEPS.forEach((step, idx) => {
+        const el = document.getElementById('step-' + step);
+        if (!el || el.classList.contains('hidden')) return;
+        const badge = el.querySelector('.step-badge');
+        if (data.status === 'done' || idx < currentIdx) {
+          badge.textContent = '✓ done';
+          badge.className = 'step-badge text-xs text-green-400 shrink-0';
+        } else if (idx === currentIdx) {
+          badge.textContent = 'in progress';
+          badge.className = 'step-badge text-xs text-yellow-400 pulse-slow shrink-0';
+        } else {
+          badge.textContent = 'pending';
+          badge.className = 'step-badge text-xs text-gray-600 shrink-0';
+        }
+      });
+    }
+
+    // ── Result / error ───────────────────────────────────────────────
+    function showResult() {
+      document.getElementById('progress-section').classList.add('hidden');
+      document.getElementById('result-section').classList.remove('hidden');
+      const url = `/download/${jobId}`;
+      document.getElementById('video-player').src = url;
+      document.getElementById('download-btn').href = url;
+    }
+
+    function showError(msg) {
+      document.getElementById('progress-bar').style.background = '#ef4444';
+      document.getElementById('progress-label').textContent = 'Error: ' + msg;
+    }
+
+    // ── Reset ────────────────────────────────────────────────────────
+    function resetApp() {
+      clearInterval(pollTimer);
+      jobId = null; selectedFile = null;
+      document.getElementById('file-input').value = '';
+      document.getElementById('yt-url').value = '';
+      document.getElementById('file-info').classList.add('hidden');
+      document.getElementById('lyrics-input').value = '';
+      document.getElementById('lyrics-section').classList.add('hidden');
+      document.getElementById('chevron').textContent = '▶';
+      document.getElementById('progress-bar').style.width = '0%';
+      document.getElementById('progress-bar').style.background = '';
+      document.getElementById('video-player').src = '';
+      document.getElementById('result-section').classList.add('hidden');
+      document.getElementById('progress-section').classList.add('hidden');
+      document.getElementById('upload-section').classList.remove('hidden');
+      // reset steps
+      ALL_STEPS.forEach(step => {
+        const el = document.getElementById('step-' + step);
+        if (!el) return;
+        const badge = el.querySelector('.step-badge');
+        badge.textContent = 'pending';
+        badge.className = 'step-badge text-xs text-gray-600 shrink-0';
+      });
+      setMode('file');
+    }
+  </script>
+</body>
+</html>

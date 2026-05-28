@@ -1,0 +1,19 @@
+# secrets
+.env
+
+# runtime dirs
+uploads/
+outputs/
+work/
+
+# python
+venv/
+__pycache__/
+*.py[cod]
+*.pth
+*.egg-info/
+dist/
+build/
+
+# models cache
+.cache/

@@ -1,0 +1,14 @@
+fastapi
+yt-dlp
+uvicorn[standard]
+python-multipart
+groq
+moviepy==1.0.3
+Pillow
+numpy
+python-dotenv
+
+# demucs needs torch with CUDA. Install torch FIRST:
+#   pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
+# Then:
+#   pip install demucs
